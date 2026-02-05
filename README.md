@@ -2,6 +2,11 @@
 
 A local Linear-style ticketing system using SQLite, featuring an MCP (Model Context Protocol) server for AI assistant integration.
 
+## Features
+
+- **MCP Server** - 29 tools for managing issues, projects, teams, users, labels, cycles, and comments
+- **Agentic PM** - Multi-agent orchestration using Linear DB as coordination layer (see [agentic-pm/](agentic-pm/))
+
 ## Documentation
 
 | Document | Description |
@@ -20,24 +25,22 @@ A local Linear-style ticketing system using SQLite, featuring an MCP (Model Cont
 ├── linear_schema.sql          # SQLite schema definition
 ├── schema_diagram.md          # Entity relationship diagram
 ├── README.md                  # This file
-└── sqlite-mcp-server/         # MCP server implementation
-    ├── README.md              # Server documentation
-    ├── linear.db              # SQLite database (after init)
-    ├── package.json
-    ├── src/
-    │   ├── index.ts           # MCP server entry point
-    │   ├── init-db.ts         # Database initialization
-    │   ├── schema.ts          # Schema definitions
-    │   ├── db.ts              # Database utilities
-    │   └── tools/             # MCP tool implementations
-    │       ├── base.ts
-    │       ├── issues.ts
-    │       ├── projects.ts
-    │       ├── teams.ts
-    │       ├── users.ts
-    │       ├── labels.ts
-    │       ├── cycles.ts
-    │       └── comments.ts
+├── sqlite-mcp-server/         # MCP server implementation
+│   ├── README.md              # Server documentation
+│   ├── linear.db              # SQLite database (after init)
+│   ├── package.json
+│   └── src/
+│       ├── index.ts           # MCP server entry point
+│       ├── init-db.ts         # Database initialization
+│       ├── schema.ts          # Schema definitions
+│       ├── db.ts              # Database utilities
+│       └── tools/             # MCP tool implementations
+└── agentic-pm/                # Multi-agent orchestration
+    ├── README.md              # Agentic PM documentation
+    ├── alan.py                # PM agent (PRD → tasks)
+    ├── worker.py              # Developer agent (executes tasks)
+    ├── linear_client.py       # HTTP client for Linear DB MCP
+    └── docs/                  # Detailed documentation
 ```
 
 ## Quick Start
