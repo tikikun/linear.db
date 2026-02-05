@@ -58,12 +58,19 @@ connect ECONNREFUSED 127.0.0.1:3334
 
 **Symptom**: Tools like `list_issue_statuses` return "Team not found".
 
-**Cause**: Missing `team` parameter.
+**Causes**:
+1. Missing `team` parameter
+2. No teams created in database (default database has NO teams)
 
-**Fix**: Provide team name, key, or ID:
-```json
-{"team": "ENG"}
-```
+**Fix**:
+1. First create a team using SQL or your application:
+   ```sql
+   INSERT INTO teams (id, name, key) VALUES ('team_1', 'Engineering', 'ENG');
+   ```
+2. Then provide team name, key, or ID:
+   ```json
+   {"team": "ENG"}
+   ```
 
 ### "Issue not found" for Comments
 

@@ -62,24 +62,15 @@ The server uses `StreamableHTTPServerTransport` with:
 }
 ```
 
-**Source**: `src/index.ts:111-115`
+**Source**: `src/index.ts:111-118`
 
 These settings are not configurable via environment variables.
 
 ## Default Data
 
-After `npm run init-db`, the database contains:
+After `npm run init-db`, the database contains ONLY priorities and statuses.
 
-### Teams
-| ID | Name | Key |
-|----|------|-----|
-| `team_eng` | Engineering | `ENG` |
-| `team_design` | Design | `DES` |
-
-### Users
-| ID | Name | Email |
-|----|------|-------|
-| `user_thinh` | Thinh Le | `thinh@test.com` |
+**No default teams or users are created.** You must create them manually.
 
 ### Issue Statuses
 | Type | Name | Color |

@@ -45,12 +45,12 @@ npm run init-db
 ```
 
 Creates `linear.db` with:
-- Default teams (Engineering, Design)
-- Default user
 - Issue statuses (Backlog, Todo, In Progress, Done, Canceled, Duplicate)
 - Issue priorities (None, Urgent, High, Normal, Low)
 
-**Source**: `src/init-db.ts`
+**Note**: No default teams or users are created. You must add them manually.
+
+**Source**: `linear_schema.sql:280-298`
 
 ### 4. Start Server
 

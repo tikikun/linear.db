@@ -20,7 +20,7 @@ List issues with optional filtering.
 | `limit` | number | Max results |
 | `includeArchived` | boolean | Include archived issues |
 
-**Source**: `src/tools/issues.ts:6-24`
+**Source**: `src/tools/issues.ts:8-24`
 
 ### get_issue
 
@@ -90,7 +90,7 @@ Update an existing issue.
 | `limit` | number | Max results |
 | `includeArchived` | boolean | Include archived |
 
-**Source**: `src/tools/projects.ts:5-19`
+**Source**: `src/tools/projects.ts:7-20`
 
 ### get_project
 
@@ -99,7 +99,7 @@ Update an existing issue.
 | `query` | string | ✅ | Project ID or name |
 | `includeMilestones` | boolean | | Include milestones |
 
-**Source**: `src/tools/projects.ts:21-30`
+**Source**: `src/tools/projects.ts:21-31`
 
 ### create_project
 
@@ -114,7 +114,7 @@ Update an existing issue.
 | `priority` | number | | 0-4 |
 | `lead` | string | | User ID, name, email, or 'me' |
 
-**Source**: `src/tools/projects.ts:32-49`
+**Source**: `src/tools/projects.ts:34-49`
 
 ### update_project
 
@@ -149,7 +149,7 @@ Update an existing issue.
 | `description` | string | | Description |
 | `target_date` | string | | ISO date |
 
-**Source**: `src/tools/projects.ts:78-90`
+**Source**: `src/tools/projects.ts:78-91`
 
 ---
 
@@ -171,7 +171,7 @@ Update an existing issue.
 |-----------|------|----------|-------------|
 | `query` | string | ✅ | Team UUID, key, or name |
 
-**Source**: `src/tools/teams.ts:19-27`
+**Source**: `src/tools/teams.ts:19-28`
 
 ### list_issue_statuses
 
@@ -194,7 +194,7 @@ Returns team-specific and global statuses.
 | `query` | string | Filter by name or email |
 | `limit` | number | Max results |
 
-**Source**: `src/tools/users.ts:5-16`
+**Source**: `src/tools/users.ts:6-16`
 
 ### get_user
 
@@ -202,7 +202,7 @@ Returns team-specific and global statuses.
 |-----------|------|----------|-------------|
 | `query` | string | ✅ | User ID, name, email, or `'me'` |
 
-**Source**: `src/tools/users.ts:18-27`
+**Source**: `src/tools/users.ts:17-27`
 
 ---
 
@@ -216,7 +216,7 @@ Returns team-specific and global statuses.
 | `name` | string | Search by name |
 | `limit` | number | Max results (default: 50) |
 
-**Source**: `src/tools/labels.ts:7-9`
+**Source**: `src/tools/labels.ts:7-10`
 
 ### create_issue_label
 
@@ -229,7 +229,7 @@ Returns team-specific and global statuses.
 
 **Note**: `team` is optional. If omitted, creates a global label.
 
-**Source**: `src/tools/labels.ts:11-18`
+**Source**: `src/tools/labels.ts:11-19`
 
 ### update_issue_label
 
@@ -247,7 +247,7 @@ Returns team-specific and global statuses.
 |-----------|------|----------|-------------|
 | `id` | string | ✅ | Label ID |
 
-**Source**: `src/tools/labels.ts:25-28`
+**Source**: `src/tools/labels.ts:25-29`
 
 ---
 
@@ -260,7 +260,7 @@ Returns team-specific and global statuses.
 | `team` | string | ✅ | Team name, key, or ID |
 | `type` | string | | `current`, `previous`, or `next` |
 
-**Source**: `src/tools/cycles.ts:5-9`
+**Source**: `src/tools/cycles.ts:7-9`
 
 ### get_cycle
 
@@ -268,7 +268,7 @@ Returns team-specific and global statuses.
 |-----------|------|----------|-------------|
 | `id` | string | ✅ | Cycle ID |
 
-**Source**: `src/tools/cycles.ts:11-14`
+**Source**: `src/tools/cycles.ts:12-14`
 
 ### create_cycle
 
@@ -280,7 +280,7 @@ Returns team-specific and global statuses.
 | `endDate` | string | ✅ | ISO date |
 | `description` | string | | Description |
 
-**Source**: `src/tools/cycles.ts:16-24`
+**Source**: `src/tools/cycles.ts:17-24`
 
 ### update_cycle
 
@@ -293,7 +293,7 @@ Returns team-specific and global statuses.
 | `startDate` | string | | New start date |
 | `endDate` | string | | New end date |
 
-**Source**: `src/tools/cycles.ts:26-29`
+**Source**: `src/tools/cycles.ts:26-28`
 
 ### delete_cycle
 
@@ -325,7 +325,7 @@ Returns team-specific and global statuses.
 | `body` | string | ✅ | Comment text |
 | `parentId` | string | | Parent comment ID (for replies) |
 
-**Source**: `src/tools/comments.ts:12-15`
+**Source**: `src/tools/comments.ts:13-15`
 
 ### update_comment
 
@@ -342,4 +342,4 @@ Returns team-specific and global statuses.
 |-----------|------|----------|-------------|
 | `id` | string | ✅ | Comment ID |
 
-**Source**: `src/tools/comments.ts:22-25`
+**Source**: `src/tools/comments.ts:22-26`
