@@ -1,4 +1,4 @@
-import { query, getOne } from "../db.js";
+import { query, getOne, run } from "../db.js";
 import { Tool, success, error } from "./base.js";
 
 export function getUserTools(): Tool[] {
@@ -25,6 +25,19 @@ export function getUserTools(): Tool[] {
         required: ["query"],
       },
     },
+    {
+      name: "create_user",
+      description: "Create a new user",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "User's display name" },
+          email: { type: "string", description: "User's email address" },
+          avatarUrl: { type: "string", description: "URL to user's avatar image" },
+        },
+        required: ["name", "email"],
+      },
+    },
   ];
 }
 
@@ -47,5 +60,21 @@ export function registerUserTools(registerHandler: (name: string, handler: (args
     const user = await getOne("SELECT * FROM users WHERE id = ? OR name = ? OR email = ?", [args.query, args.query, args.query]);
     if (!user) return error("User not found");
     return success(user);
+  });
+
+  registerHandler("create_user", async (args) => {
+    // Check if email already exists
+    const existing = await getOne<{id: string}>(`SELECT id FROM users WHERE email = ?`, [args.email]);
+    if (existing) return error(`User with email '${args.email}' already exists`);
+    
+    // Generate ID from name (lowercase, replace spaces with underscore)
+    const id = `user_${args.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')}`;
+    const now = new Date().toISOString();
+    
+    await run(`INSERT INTO users (id, name, email, avatar_url, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?)`,
+               [id, args.name, args.email, args.avatarUrl || null, now, now]);
+    
+    return success({ id, name: args.name, email: args.email });
   });
 }

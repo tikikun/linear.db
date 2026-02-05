@@ -163,7 +163,7 @@ Update an existing issue.
 | `limit` | number | Max results |
 | `includeArchived` | boolean | Include archived teams |
 
-**Source**: `src/tools/teams.ts:7-17`
+**Source**: `src/tools/teams.ts`
 
 ### get_team
 
@@ -171,7 +171,28 @@ Update an existing issue.
 |-----------|------|----------|-------------|
 | `query` | string | ✅ | Team UUID, key, or name |
 
-**Source**: `src/tools/teams.ts:19-28`
+**Source**: `src/tools/teams.ts`
+
+### create_team
+
+Create a new team.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `name` | string | ✅ | Team name |
+| `key` | string | ✅ | Team key (2-5 uppercase letters, e.g., `ENG`) |
+| `color` | string | | Hex color (default: `#5e6ad2`) |
+| `icon` | string | | Team icon |
+
+**Example**:
+```json
+{
+  "name": "Engineering",
+  "key": "ENG"
+}
+```
+
+**Source**: `src/tools/teams.ts`
 
 ### list_issue_statuses
 
@@ -194,7 +215,7 @@ Returns team-specific and global statuses.
 | `query` | string | Filter by name or email |
 | `limit` | number | Max results |
 
-**Source**: `src/tools/users.ts:6-16`
+**Source**: `src/tools/users.ts`
 
 ### get_user
 
@@ -202,7 +223,27 @@ Returns team-specific and global statuses.
 |-----------|------|----------|-------------|
 | `query` | string | ✅ | User ID, name, email, or `'me'` |
 
-**Source**: `src/tools/users.ts:17-27`
+**Source**: `src/tools/users.ts`
+
+### create_user
+
+Create a new user.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `name` | string | ✅ | User's display name |
+| `email` | string | ✅ | User's email address (must be unique) |
+| `avatarUrl` | string | | URL to user's avatar image |
+
+**Example**:
+```json
+{
+  "name": "Alice Developer",
+  "email": "alice@example.com"
+}
+```
+
+**Source**: `src/tools/users.ts`
 
 ---
 
