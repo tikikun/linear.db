@@ -1,7 +1,8 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import express, { Request, Response } from "express";
+import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import { Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { initializeDatabase } from "./schema.js";
 
@@ -16,12 +17,6 @@ import { registerUserTools, getUserTools } from "./tools/users.js";
 
 // Initialize database schema
 initializeDatabase();
-
-// Create MCP server
-const server = new Server(
-  { name: "linear-sqlite-mcp", version: "1.0.0" },
-  { capabilities: { tools: {} } }
-);
 
 // All registered tool handlers
 const toolHandlers: Record<string, (args: any) => Promise<any>> = {};
@@ -50,145 +45,165 @@ const allTools = [
   ...getUserTools(),
 ];
 
-// Set up request handlers
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: allTools,
-}));
+// Function to create a new MCP server instance
+function createServer(): Server {
+  const server = new Server(
+    { name: "linear-sqlite-mcp", version: "1.0.0" },
+    { capabilities: { tools: {} } }
+  );
 
-server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
-  const { name, arguments: args } = request.params;
-  const handler = toolHandlers[name];
+  // Set up request handlers
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: allTools,
+  }));
 
-  if (!handler) {
-    return {
-      content: [{ type: "text", text: JSON.stringify({ error: `Unknown tool: ${name}` }, null, 2) }],
-      isError: true,
-    };
-  }
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+    const handler = toolHandlers[name];
 
-  try {
-    const result = await handler(args || {});
-    return {
-      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-    };
-  } catch (error: any) {
-    return {
-      content: [{ type: "text", text: JSON.stringify({ error: error.message }, null, 2) }],
-      isError: true,
-    };
-  }
-});
+    if (!handler) {
+      return {
+        content: [{ type: "text", text: JSON.stringify({ error: `Unknown tool: ${name}` }, null, 2) }],
+        isError: true,
+      };
+    }
 
-// Session management for Streamable HTTP
-interface Session {
-  transport: StreamableHTTPServerTransport;
-  lastActivity: number;
+    try {
+      const result = await handler(args || {});
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      };
+    } catch (error: any) {
+      return {
+        content: [{ type: "text", text: JSON.stringify({ error: error.message }, null, 2) }],
+        isError: true,
+      };
+    }
+  });
+
+  return server;
 }
 
-const sessions = new Map<string, Session>();
-const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+// Session management - store transports by session ID
+const transports: Record<string, StreamableHTTPServerTransport> = {};
 
-// Create Express app
-const app = express();
-app.use(express.json());
+// Create Express app with DNS rebinding protection
+const app = createMcpExpressApp();
 
 // Health check endpoint
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", server: "linear-sqlite-mcp" });
 });
 
-// MCP endpoint - handle both GET (for SSE-like streaming) and POST
-app.all("/mcp", async (req: Request, res: Response) => {
+// MCP endpoint - POST for client-to-server messages
+app.post("/mcp", async (req: Request, res: Response) => {
   const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
-  // Handle initialization
-  if (req.body?.method === "initialize") {
-    const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => randomUUID(),
-    });
-
-    const newSessionId = transport.sessionId ?? randomUUID();
-    sessions.set(newSessionId, {
-      transport,
-      lastActivity: Date.now(),
-    });
-
-    // Handle session cleanup on close
-    transport.onclose = () => {
-      sessions.delete(newSessionId);
-    };
-
-    await server.connect(transport);
-    await transport.handleRequest(req, res, req.body);
-    return;
-  }
-
-  // Handle subsequent requests with session ID
-  if (sessionId && sessions.has(sessionId)) {
-    const session = sessions.get(sessionId)!;
-    session.lastActivity = Date.now();
-    await session.transport.handleRequest(req, res, req.body);
-    return;
-  }
-
-  // Stateless mode: process request directly without MCP transport
-  if (!sessionId && req.body?.method && req.body.method !== "initialize") {
-    const method = req.body.method;
-    const requestId = req.body.id;
-
-    try {
-      let result: any;
-
-      if (method === "tools/list") {
-        result = { tools: allTools };
-      } else if (method === "tools/call") {
-        const { name, arguments: args } = req.body.params || {};
-        const handler = toolHandlers[name];
-        if (!handler) {
-          result = {
-            content: [{ type: "text", text: JSON.stringify({ error: `Unknown tool: ${name}` }, null, 2) }],
-            isError: true,
-          };
-        } else {
-          try {
-            const data = await handler(args || {});
-            result = { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-          } catch (error: any) {
-            result = {
-              content: [{ type: "text", text: JSON.stringify({ error: error.message }, null, 2) }],
-              isError: true,
-            };
-          }
-        }
-      } else {
-        result = { error: `Unknown method: ${method}` };
-      }
-
-      res.json({ jsonrpc: "2.0", id: requestId, ...result });
-    } catch (error: any) {
-      res.status(500).json({ jsonrpc: "2.0", id: req.body.id, error: { message: error.message } });
+  try {
+    // Reuse existing transport for established sessions
+    if (sessionId && transports[sessionId]) {
+      await transports[sessionId].handleRequest(req, res, req.body);
+      return;
     }
-    return;
-  }
 
-  res.status(400).json({ error: "Invalid request" });
+    // New session initialization
+    if (!sessionId && isInitializeRequest(req.body)) {
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => randomUUID(),
+        enableJsonResponse: true, // Fast JSON responses instead of SSE
+        onsessioninitialized: (sid) => {
+          console.log(`Session initialized: ${sid}`);
+          transports[sid] = transport;
+        },
+      });
+
+      // Clean up on close
+      transport.onclose = () => {
+        const sid = transport.sessionId;
+        if (sid && transports[sid]) {
+          console.log(`Session closed: ${sid}`);
+          delete transports[sid];
+        }
+      };
+
+      // Connect transport to a new server instance and handle request
+      const server = createServer();
+      await server.connect(transport);
+      await transport.handleRequest(req, res, req.body);
+
+      // Clean up on response close
+      res.on("close", () => {
+        // Keep the transport alive for the session, only clean up the server connection
+      });
+      return;
+    }
+
+    // Invalid request - no session ID for non-initialization request
+    res.status(400).json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: "Bad Request: No valid session ID provided",
+      },
+      id: null,
+    });
+  } catch (error: any) {
+    console.error("Error handling MCP request:", error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32603,
+          message: "Internal server error",
+        },
+        id: null,
+      });
+    }
+  }
 });
 
-// Session cleanup interval
-setInterval(() => {
-  const now = Date.now();
-  for (const [sessionId, session] of sessions.entries()) {
-    if (now - session.lastActivity > SESSION_TIMEOUT) {
-      session.transport.close();
-      sessions.delete(sessionId);
-    }
+// MCP endpoint - GET for SSE streams (optional, return 405 if not supported)
+app.get("/mcp", (_req: Request, res: Response) => {
+  // Per spec: return 405 if server doesn't offer SSE stream at this endpoint
+  res.status(405).set("Allow", "POST, DELETE").send("Method Not Allowed");
+});
+
+// MCP endpoint - DELETE for session termination
+app.delete("/mcp", (req: Request, res: Response) => {
+  const sessionId = req.headers["mcp-session-id"] as string | undefined;
+  
+  if (sessionId && transports[sessionId]) {
+    console.log(`Session terminated by client: ${sessionId}`);
+    transports[sessionId].close();
+    delete transports[sessionId];
+    res.status(200).end();
+  } else {
+    // Per spec: server MAY respond with 405 if it doesn't allow clients to terminate sessions
+    res.status(404).json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: "Session not found",
+      },
+      id: null,
+    });
   }
-}, 60000);
+});
 
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Linear SQLite MCP Server running on http://localhost:${PORT}/mcp`);
+  console.log(`Using Streamable HTTP transport with JSON response mode`);
 });
 
-export { server };
+// Handle server shutdown
+process.on("SIGINT", async () => {
+  console.log("Shutting down server...");
+  // Close all active sessions
+  for (const [sessionId, transport] of Object.entries(transports)) {
+    console.log(`Closing session: ${sessionId}`);
+    await transport.close();
+  }
+  process.exit(0);
+});

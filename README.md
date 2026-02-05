@@ -2,6 +2,16 @@
 
 A local Linear-style ticketing system using SQLite, featuring an MCP (Model Context Protocol) server for AI assistant integration.
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Installation](docs/installation.md) | Setup guide, dependencies, MCP client config |
+| [Architecture](docs/architecture.md) | System design, components, request flow |
+| [API Reference](docs/api.md) | Complete tool documentation (27 tools) |
+| [Configuration](docs/configuration.md) | Environment variables, default data |
+| [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
+
 ## Project Structure
 
 ```
@@ -82,21 +92,41 @@ This project uses a normalized SQLite schema that mimics Linear's data model:
 
 See `schema_diagram.md` for the entity relationship diagram.
 
-## MCP Tools
+## MCP Tools (27 total)
 
 Available tools for AI assistants:
 
-- **Issues**: list_issues, get_issue, create_issue, update_issue
-- **Projects**: list_projects, get_project, create_project
-- **Teams**: list_teams, get_team
-- **Users**: list_users, get_user
-- **Labels**: list_labels, create_label
-- **Cycles**: list_cycles
-- **Comments**: list_comments, create_comment
+| Category | Tools |
+|----------|-------|
+| **Issues** | `list_issues`, `get_issue`, `create_issue`, `update_issue` |
+| **Projects** | `list_projects`, `get_project`, `create_project`, `update_project` |
+| **Milestones** | `list_milestones`, `create_milestone` |
+| **Teams** | `list_teams`, `get_team`, `list_issue_statuses` |
+| **Users** | `list_users`, `get_user` |
+| **Labels** | `list_issue_labels`, `create_issue_label`, `update_issue_label`, `delete_issue_label` |
+| **Cycles** | `list_cycles`, `get_cycle`, `create_cycle`, `update_cycle`, `delete_cycle` |
+| **Comments** | `list_comments`, `create_comment`, `update_comment`, `delete_comment` |
 
-See `sqlite-mcp-server/README.md` for detailed tool documentation.
+See [API Reference](docs/api.md) for detailed documentation.
 
-## Usage with Claude Code
+## Usage with MCP Clients
+
+### Cursor (URL-based, recommended)
+
+1. Start the server: `PORT=3334 npm run dev`
+2. Add to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "linear-db": {
+      "url": "http://localhost:3334/mcp"
+    }
+  }
+}
+```
+
+### Claude Code (stdio-based)
 
 Add to your MCP configuration:
 

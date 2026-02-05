@@ -1,5 +1,7 @@
 # SQLite databases
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 *-wal
@@ -11,6 +13,10 @@ dist/
 build/
 *.log
 npm-debug.log*
+
+# Node
+node_modules/
+dist/
 
 # Editor/IDE
 .idea/

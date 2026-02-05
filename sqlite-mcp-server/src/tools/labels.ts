@@ -1,6 +1,5 @@
-import { Tool } from "@modelcontextprotocol/sdk/types.js";
+import { Tool, success, getTeamId } from "./base.js";
 import { query, getOne, run } from "../db.js";
-import { success, getTeamId } from "./base.js";
 
 export function getLabelTools(): Tool[] {
   return [
