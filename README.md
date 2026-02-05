@@ -8,6 +8,8 @@
 
 A Linear-style, agentic project management system powered by SQLite with MCP integration for AI assistants.
 
+![Demo](linear-sqlite-mcp-demo.png)
+
 [Why Linear.DB?](docs/why.md) • [Features](#features) • [Quick Start](#quick-start) • [API Reference](docs/api.md)
 
 </div>
