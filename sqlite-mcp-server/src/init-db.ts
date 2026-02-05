@@ -52,9 +52,16 @@ function parseStatements(sql: string): string[] {
       // Build up the trigger statement until we hit END;
       while (i < sql.length) {
         stmt += sql[i];
-        if (sql.substring(i).startsWith('END;')) {
-          i += 5; // Skip "END;"
-          break;
+        // Look for END; with possible whitespace before semicolon
+        if (stmt.trimEnd().endsWith('END')) {
+          // Check if next char is semicolon or whitespace + semicolon
+          let j = i + 1;
+          while (j < sql.length && /\s/.test(sql[j])) j++;
+          if (sql[j] === ';') {
+            stmt += ';';
+            i = j + 1;
+            break;
+          }
         }
         i++;
       }

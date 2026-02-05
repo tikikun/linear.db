@@ -2,6 +2,15 @@
 *.db
 *.sqlite
 *.sqlite3
+*-wal
+*-shm
+
+# Node.js
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
 
 # Editor/IDE
 .idea/
