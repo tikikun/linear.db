@@ -2,6 +2,27 @@
 
 ## Common Issues
 
+### Status Update Not Working (Fixed in v1.1)
+
+**Symptom**: `update_issue` with `state` parameter returns "Issue updated" but status doesn't change.
+
+**Cause**: The query was looking for statuses with `team_id = ?`, but global statuses have `team_id IS NULL`.
+
+**Fix**: Updated in `src/tools/issues.ts` to include global statuses:
+```sql
+SELECT id FROM issue_statuses 
+WHERE (team_id = ? OR team_id IS NULL) 
+AND (name = ? OR id = ? OR type = ?)
+```
+
+### Labels-Only Update Returns "No updates provided" (Fixed in v1.1)
+
+**Symptom**: `update_issue` with only `labels` parameter returns `{ "message": "No updates provided" }`.
+
+**Cause**: Labels were processed after the early return check for empty updates array.
+
+**Fix**: Labels are now processed before the early return check in `src/tools/issues.ts`.
+
 ### NODE_MODULE_VERSION Error
 
 **Symptom**:
@@ -63,14 +84,25 @@ connect ECONNREFUSED 127.0.0.1:3334
 2. No teams created in database (default database has NO teams)
 
 **Fix**:
-1. First create a team using SQL or your application:
-   ```sql
-   INSERT INTO teams (id, name, key) VALUES ('team_1', 'Engineering', 'ENG');
+1. First create a team using the `create_team` tool:
+   ```json
+   {"name": "Engineering", "key": "ENG"}
    ```
 2. Then provide team name, key, or ID:
    ```json
    {"team": "ENG"}
    ```
+
+### "No users exist" Error
+
+**Symptom**: Cannot assign issues because no users exist in the database.
+
+**Cause**: Fresh database has no users.
+
+**Fix**: Create a user first using the `create_user` tool:
+```json
+{"name": "Alice Developer", "email": "alice@example.com"}
+```
 
 ### "Issue not found" for Comments
 

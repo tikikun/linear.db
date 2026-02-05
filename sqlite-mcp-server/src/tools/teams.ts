@@ -27,6 +27,20 @@ export function getTeamTools(): Tool[] {
       },
     },
     {
+      name: "create_team",
+      description: "Create a new team",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Team name" },
+          key: { type: "string", description: "Team key (2-5 uppercase letters, e.g., ENG)" },
+          color: { type: "string", description: "Team color (hex, e.g., #5e6ad2)" },
+          icon: { type: "string", description: "Team icon" },
+        },
+        required: ["name", "key"],
+      },
+    },
+    {
       name: "list_issue_statuses",
       description: "List available issue statuses in a team",
       inputSchema: {
@@ -54,6 +68,26 @@ export function registerTeamTools(registerHandler: (name: string, handler: (args
     const team = await getOne(`SELECT * FROM teams WHERE id = ? OR key = ? OR name = ?`, [args.query, args.query, args.query]);
     if (!team) return error("Team not found");
     return success(team);
+  });
+
+  registerHandler("create_team", async (args) => {
+    // Validate key format (2-5 uppercase letters)
+    if (!/^[A-Z]{2,5}$/.test(args.key)) {
+      return error("Team key must be 2-5 uppercase letters (e.g., ENG, PROD)");
+    }
+    
+    // Check if key already exists
+    const existing = await getOne<{id: string}>(`SELECT id FROM teams WHERE key = ?`, [args.key]);
+    if (existing) return error(`Team with key '${args.key}' already exists`);
+    
+    const id = `team_${args.key.toLowerCase()}`;
+    const now = new Date().toISOString();
+    
+    await run(`INSERT INTO teams (id, name, key, color, icon, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+               [id, args.name, args.key, args.color || '#5e6ad2', args.icon || null, now, now]);
+    
+    return success({ id, name: args.name, key: args.key });
   });
 
   registerHandler("list_issue_statuses", async (args) => {
