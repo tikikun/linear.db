@@ -8,8 +8,9 @@ A local Linear-style ticketing system using SQLite, featuring an MCP (Model Cont
 |----------|-------------|
 | [Installation](docs/installation.md) | Setup guide, dependencies, MCP client config |
 | [Architecture](docs/architecture.md) | System design, components, request flow |
-| [API Reference](docs/api.md) | Complete tool documentation (27 tools) |
+| [API Reference](docs/api.md) | Complete tool documentation (29 tools) |
 | [Configuration](docs/configuration.md) | Environment variables, default data |
+| [E2E Testing](docs/e2e-testing.md) | End-to-end testing workflow and checklist |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
 
 ## Project Structure
@@ -92,7 +93,7 @@ This project uses a normalized SQLite schema that mimics Linear's data model:
 
 See `schema_diagram.md` for the entity relationship diagram.
 
-## MCP Tools (27 total)
+## MCP Tools (29 total)
 
 Available tools for AI assistants:
 
@@ -101,8 +102,8 @@ Available tools for AI assistants:
 | **Issues** | `list_issues`, `get_issue`, `create_issue`, `update_issue` |
 | **Projects** | `list_projects`, `get_project`, `create_project`, `update_project` |
 | **Milestones** | `list_milestones`, `create_milestone` |
-| **Teams** | `list_teams`, `get_team`, `list_issue_statuses` |
-| **Users** | `list_users`, `get_user` |
+| **Teams** | `list_teams`, `get_team`, `create_team`, `list_issue_statuses` |
+| **Users** | `list_users`, `get_user`, `create_user` |
 | **Labels** | `list_issue_labels`, `create_issue_label`, `update_issue_label`, `delete_issue_label` |
 | **Cycles** | `list_cycles`, `get_cycle`, `create_cycle`, `update_cycle`, `delete_cycle` |
 | **Comments** | `list_comments`, `create_comment`, `update_comment`, `delete_comment` |
