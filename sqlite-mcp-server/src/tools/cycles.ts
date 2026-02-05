@@ -1,13 +1,12 @@
-import { Tool } from "@modelcontextprotocol/sdk/types.js";
+import { Tool, success, getTeamId } from "./base.js";
 import { query, getOne, run } from "../db.js";
-import { success, getTeamId } from "./base.js";
 
 export function getCycleTools(): Tool[] {
   return [
     {
       name: "list_cycles",
       description: "List cycles for a team",
-      inputSchema: { type: "object", properties: { teamId: { type: "string" }, type: { type: "string", enum: ["current", "previous", "next"] } }, required: ["teamId"] },
+      inputSchema: { type: "object", properties: { team: { type: "string", description: "Team name, key, or ID" }, type: { type: "string", enum: ["current", "previous", "next"] } }, required: ["team"] },
     },
     {
       name: "get_cycle",
@@ -38,7 +37,7 @@ export function getCycleTools(): Tool[] {
 
 export function registerCycleTools(registerHandler: (name: string, handler: (args: any) => Promise<any>) => void) {
   registerHandler("list_cycles", async (args) => {
-    const teamId = await getTeamId(args.teamId);
+    const teamId = await getTeamId(args.team);
     if (!teamId) return { success: false, error: "Team not found" };
     let sql = "SELECT * FROM cycles WHERE team_id = ?";
     const params: any[] = [teamId];
