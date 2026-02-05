@@ -72,19 +72,20 @@ echo ""
 
 # Issue Statuses
 echo "--- Issue Statuses ---"
-# First check if we have a team
 TEAM_RESPONSE=$(mcp_call '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_teams","arguments":{}}}')
 HAS_TEAMS=$(echo "$TEAM_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('result',{}).get('content',[{}])[0].get('text','{}'); data=json.loads(r); print('yes' if data.get('data') else 'no')" 2>/dev/null || echo "no")
 
 if [ "$HAS_TEAMS" = "yes" ]; then
-  RESPONSE=$(mcp_call '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_issue_statuses","arguments":{"team":""}}}')
-  # Check for global statuses (the fix ensures team_id IS NULL statuses are returned)
+  # Get first team key for testing
+  TEAM_KEY=$(echo "$TEAM_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('result',{}).get('content',[{}])[0].get('text','{}'); data=json.loads(r); teams=data.get('data',[]); print(teams[0].get('key','') if teams else '')" 2>/dev/null || echo "")
+  
+  RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"list_issue_statuses\",\"arguments\":{\"team\":\"$TEAM_KEY\"}}}")
   STATUS_COUNT=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('result',{}).get('content',[{}])[0].get('text','{}'); data=json.loads(r); print(len(data.get('data',[])))" 2>/dev/null || echo "0")
   if [ "$STATUS_COUNT" -ge 5 ]; then
-    echo -e "${GREEN}✓ list_issue_statuses returns global statuses ($STATUS_COUNT found)${NC}"
+    echo -e "${GREEN}✓ list_issue_statuses returns statuses ($STATUS_COUNT found)${NC}"
     ((PASSED++))
   else
-    echo -e "${RED}✗ list_issue_statuses missing global statuses (only $STATUS_COUNT)${NC}"
+    echo -e "${RED}✗ list_issue_statuses missing statuses (only $STATUS_COUNT)${NC}"
     ((FAILED++))
   fi
 else
@@ -100,10 +101,10 @@ if [ "$HAS_TEAMS" = "yes" ]; then
   
   if [ -n "$TEAM_KEY" ]; then
     RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"create_project\",\"arguments\":{\"name\":\"Test Project $(date +%s)\",\"team\":\"$TEAM_KEY\"}}}")
-    check_result "$name" "$RESPONSE" 'success.*true'
+    check_result "create_project" "$RESPONSE" '"success": true'
     
     RESPONSE=$(mcp_call '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_projects","arguments":{}}}')
-    check_result "$name" "$RESPONSE" 'success.*true'
+    check_result "list_projects" "$RESPONSE" '"success": true'
   fi
 else
   echo -e "${YELLOW}⚠ Skipping project tests (no teams)${NC}"
@@ -114,21 +115,21 @@ echo ""
 echo "--- Issues CRUD ---"
 if [ -n "$TEAM_KEY" ]; then
   RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"create_issue\",\"arguments\":{\"title\":\"Test Issue $(date +%s)\",\"team\":\"$TEAM_KEY\",\"priority\":2}}}")
-  check_result "$name" "$RESPONSE" 'success.*true'
+  check_result "create_issue" "$RESPONSE" '"success": true'
   
   # Extract issue identifier
   ISSUE_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('result',{}).get('content',[{}])[0].get('text','{}'); data=json.loads(r); print(data.get('data',{}).get('identifier',''))" 2>/dev/null || echo "")
   
   if [ -n "$ISSUE_ID" ]; then
     RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"get_issue\",\"arguments\":{\"id\":\"$ISSUE_ID\"}}}")
-    check_result "$name" "$RESPONSE" 'success.*true'
+    check_result "get_issue" "$RESPONSE" '"success": true'
     
     RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"update_issue\",\"arguments\":{\"id\":\"$ISSUE_ID\",\"title\":\"Updated Title\"}}}")
-    check_result "$name" "$RESPONSE" 'success.*true'
+    check_result "update_issue" "$RESPONSE" '"success": true'
   fi
   
   RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"list_issues\",\"arguments\":{\"team\":\"$TEAM_KEY\"}}}")
-  check_result "$name" "$RESPONSE" 'success.*true'
+  check_result "list_issues" "$RESPONSE" '"success": true'
 else
   echo -e "${YELLOW}⚠ Skipping issue tests (no teams)${NC}"
 fi
@@ -138,10 +139,10 @@ echo ""
 echo "--- Labels CRUD ---"
 if [ -n "$TEAM_KEY" ]; then
   RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"create_issue_label\",\"arguments\":{\"name\":\"test-label-$(date +%s)\",\"team\":\"$TEAM_KEY\",\"color\":\"#00FF00\"}}}")
-  check_result "$name" "$RESPONSE" 'success.*true'
+  check_result "create_issue_label" "$RESPONSE" '"success": true'
   
   RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"list_issue_labels\",\"arguments\":{\"team\":\"$TEAM_KEY\"}}}")
-  check_result "$name" "$RESPONSE" 'success.*true'
+  check_result "list_issue_labels" "$RESPONSE" '"success": true'
 else
   echo -e "${YELLOW}⚠ Skipping label tests (no teams)${NC}"
 fi
@@ -151,10 +152,10 @@ echo ""
 echo "--- Cycles CRUD ---"
 if [ -n "$TEAM_KEY" ]; then
   RESPONSE=$(mcp_call "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"create_cycle\",\"arguments\":{\"team\":\"$TEAM_KEY\",\"name\":\"Test Sprint $(date +%s)\",\"startDate\":\"2026-01-01\",\"endDate\":\"2026-01-14\"}}}")
-  check_result "$name" "$RESPONSE" 'success.*true'
+  check_result "create_cycle" "$RESPONSE" '"success": true'
   
   RESPONSE=$(mcp_call '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_cycles","arguments":{}}}')
-  check_result "$name" "$RESPONSE" 'success.*true'
+  check_result "list_cycles" "$RESPONSE" '"success": true'
 else
   echo -e "${YELLOW}⚠ Skipping cycle tests (no teams)${NC}"
 fi
