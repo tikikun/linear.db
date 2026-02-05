@@ -4,6 +4,15 @@
 *.db-shm
 *.sqlite
 *.sqlite3
+*-wal
+*-shm
+
+# Node.js
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
 
 # Node
 node_modules/
