@@ -1,7 +1,13 @@
 # SQLite databases
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
+
+# Node
+node_modules/
+dist/
 
 # Editor/IDE
 .idea/
