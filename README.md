@@ -8,6 +8,8 @@
 
 A local Linear-style ticketing system powered by SQLite with an MCP (Model Context Protocol) server for seamless AI assistant integration.
 
+![Demo](linear-sqlite-mcp-demo.png)
+
 [Features](#features) • [Quick Start](#quick-start) • [Documentation](#documentation) • [API Reference](docs/api.md)
 
 </div>
