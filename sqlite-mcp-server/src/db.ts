@@ -49,10 +49,17 @@ export function queryAll<T>(sql: string, params: any[] = []): T[] {
   return stmt.all(...params) as T[];
 }
 
+// Aliases for convenience
+export const getOne = queryOne;
+export const query = queryAll;
+
 export function execute(sql: string, params: any[] = []): Database.RunResult {
   const stmt = getDb().prepare(sql);
   return stmt.run(...params);
 }
+
+// Alias for convenience
+export const run = execute;
 
 export function transaction<T>(fn: () => T): T {
   return getDb().transaction(fn)();

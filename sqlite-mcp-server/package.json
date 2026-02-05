@@ -1,24 +1,23 @@
 {
-  "name": "sqlite-mcp-server",
+  "name": "linear-sqlite-mcp",
   "version": "1.0.0",
-  "description": "Local SQLite MCP server mimicking Linear's project management API",
+  "description": "Linear-style ticketing system MCP server using SQLite with Streamable HTTP transport",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "init-db": "node --loader ts-node/esm src/init-db.ts"
+    "init-db": "tsx src/init-db.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "better-sqlite3": "^11.0.0",
-    "express": "^4.18.2",
     "zod": "^3.22.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.8",
-    "@types/express": "^4.17.21",
+    "@types/express": "^5.0.6",
     "@types/node": "^20.10.0",
     "tsx": "^4.6.0",
     "typescript": "^5.3.0"
