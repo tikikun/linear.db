@@ -5,9 +5,11 @@
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3000` | Server port |
-| `DB_PATH` | `./linear.db` | SQLite database path |
+| `DB_PATH` | `<project>/linear.db` | SQLite database path |
 
-**Source**: `src/index.ts:194`, `src/db.ts`
+Default DB_PATH resolves to `sqlite-mcp-server/linear.db` (relative to `src/`).
+
+**Source**: `src/index.ts:194`, `src/db.ts:6`
 
 ## Example
 

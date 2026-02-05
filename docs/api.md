@@ -157,17 +157,21 @@ Update an existing issue.
 
 ### list_teams
 
-No parameters. Returns all teams.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `query` | string | Search in name or key |
+| `limit` | number | Max results |
+| `includeArchived` | boolean | Include archived teams |
 
-**Source**: `src/tools/teams.ts`
+**Source**: `src/tools/teams.ts:7-17`
 
 ### get_team
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | ✅ | Team ID, key, or name |
+| `query` | string | ✅ | Team UUID, key, or name |
 
-**Source**: `src/tools/teams.ts`
+**Source**: `src/tools/teams.ts:19-27`
 
 ### list_issue_statuses
 
@@ -185,17 +189,20 @@ Returns team-specific and global statuses.
 
 ### list_users
 
-No parameters. Returns all users.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `query` | string | Filter by name or email |
+| `limit` | number | Max results |
 
-**Source**: `src/tools/users.ts`
+**Source**: `src/tools/users.ts:5-16`
 
 ### get_user
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | ✅ | User ID, name, or email |
+| `query` | string | ✅ | User ID, name, email, or `'me'` |
 
-**Source**: `src/tools/users.ts`
+**Source**: `src/tools/users.ts:18-27`
 
 ---
 
@@ -206,19 +213,23 @@ No parameters. Returns all users.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `team` | string | Filter by team |
+| `name` | string | Search by name |
+| `limit` | number | Max results (default: 50) |
 
-**Source**: `src/tools/labels.ts`
+**Source**: `src/tools/labels.ts:7-9`
 
 ### create_issue_label
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `team` | string | ✅ | Team name or ID |
 | `name` | string | ✅ | Label name |
-| `color` | string | | Hex color |
+| `team` | string | | Team name or ID (optional) |
+| `color` | string | | Hex color (default: `#bec2c8`) |
 | `description` | string | | Description |
 
-**Source**: `src/tools/labels.ts`
+**Note**: `team` is optional. If omitted, creates a global label.
+
+**Source**: `src/tools/labels.ts:11-18`
 
 ### update_issue_label
 
@@ -227,9 +238,8 @@ No parameters. Returns all users.
 | `id` | string | ✅ | Label ID |
 | `name` | string | | New name |
 | `color` | string | | New color |
-| `description` | string | | New description |
 
-**Source**: `src/tools/labels.ts`
+**Source**: `src/tools/labels.ts:20-23`
 
 ### delete_issue_label
 
@@ -237,7 +247,7 @@ No parameters. Returns all users.
 |-----------|------|----------|-------------|
 | `id` | string | ✅ | Label ID |
 
-**Source**: `src/tools/labels.ts`
+**Source**: `src/tools/labels.ts:25-28`
 
 ---
 
