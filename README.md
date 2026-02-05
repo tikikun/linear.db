@@ -1,5 +1,7 @@
 # Linear SQLite Project
 
+![Linear SQLite MCP Demo](linear-sqlite-mcp-demo.png)
+
 A local Linear-style ticketing system using SQLite, featuring an MCP (Model Context Protocol) server for AI assistant integration.
 
 ## Documentation
