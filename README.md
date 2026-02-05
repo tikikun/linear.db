@@ -28,6 +28,7 @@ A self-hosted, lightweight alternative to Linear's API that mimics their data mo
 
 - **29 MCP Tools** for full ticketing operations
 - **Normalized SQLite schema** mirroring Linear's data model
+- **Streamable HTTP transport** - run as a remote server accessible via HTTP
 - **Multi-team support** with projects, cycles, labels, and relations
 - **AI-ready** - designed for Claude Code, Cursor, and other MCP clients
 - **Zero dependencies** - runs with Node.js and SQLite
@@ -59,17 +60,28 @@ The server will start at `http://localhost:3000/mcp`.
 
 ### Connect to Claude Code
 
-Add to your MCP configuration:
+Start the server first, then add it using the Claude Code CLI:
+
+```bash
+# Start the MCP server (in a separate terminal)
+npm run dev
+```
+
+Then connect Claude Code:
+
+```bash
+claude mcp add linear-sqlite --url http://localhost:3000/mcp
+```
+
+### Connect to Cursor
+
+Add to your Cursor settings (`~/.cursor/settings.json`):
 
 ```json
 {
   "mcpServers": {
     "linear-sqlite": {
-      "command": "node",
-      "args": ["/path/to/sqlite-mcp-server/dist/index.js"],
-      "env": {
-        "DB_PATH": "/path/to/sqlite-mcp-server/linear.db"
-      }
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -87,7 +99,7 @@ linear.db/
 │   ├── linear.db              # SQLite database (after init)
 │   ├── package.json
 │   └── src/
-│       ├── index.ts           # MCP server entry point
+│       ├── index.ts           # MCP server entry point (Streamable HTTP)
 │       ├── init-db.ts         # Database initialization
 │       ├── schema.ts          # Schema definitions
 │       ├── db.ts              # Database utilities
@@ -193,7 +205,7 @@ SELECT * FROM issue_relations WHERE relation_type = 'blockedBy';
 ## Technologies
 
 - **better-sqlite3** - SQLite bindings
-- **@modelcontextprotocol/sdk** - MCP protocol
+- **@modelcontextprotocol/sdk** - MCP protocol with Streamable HTTP support
 - **zod** - Schema validation
 - **TypeScript** - Type safety
 
