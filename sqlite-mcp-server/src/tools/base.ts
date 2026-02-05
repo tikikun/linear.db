@@ -84,6 +84,6 @@ export async function generateIssueIdentifier(teamId: string): Promise<string> {
 }
 
 const PRIORITY_MAP: Record<number, string> = {
-  1: 'prio_urgent', 2: 'prio_high', 3: 'prio_normal', 4: 'prio_low',
+  0: 'prio_none', 1: 'prio_urgent', 2: 'prio_high', 3: 'prio_normal', 4: 'prio_low',
 };
 export { PRIORITY_MAP };

@@ -59,6 +59,7 @@ export function registerTeamTools(registerHandler: (name: string, handler: (args
   registerHandler("list_issue_statuses", async (args) => {
     const team = await getOne<{id: string}>(`SELECT id FROM teams WHERE id = ? OR key = ? OR name = ?`, [args.team, args.team, args.team]);
     if (!team) return error("Team not found");
-    return success(await query(`SELECT * FROM issue_statuses WHERE team_id = ? ORDER BY id ASC`, [team.id]));
+    // Include both team-specific statuses and global statuses (team_id IS NULL)
+    return success(await query(`SELECT * FROM issue_statuses WHERE team_id = ? OR team_id IS NULL ORDER BY id ASC`, [team.id]));
   });
 }

@@ -164,7 +164,7 @@ app.all("/mcp", async (req: Request, res: Response) => {
         result = { error: `Unknown method: ${method}` };
       }
 
-      res.json({ jsonrpc: "2.0", id: requestId, ...result });
+      res.json({ jsonrpc: "2.0", id: requestId, result });
     } catch (error: any) {
       res.status(500).json({ jsonrpc: "2.0", id: req.body.id, error: { message: error.message } });
     }
