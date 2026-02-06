@@ -4,71 +4,79 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This repository contains a SQLite schema (`linear_schema.sql`) that mimics Linear's ticketing system data model. The schema was reverse-engineered from Linear's GraphQL API and is designed for local development, testing, and prototyping without requiring Linear API access.
+A Linear-style ticketing system powered by SQLite with an MCP server for AI assistants. The server exposes 29 MCP tools for managing issues, projects, teams, labels, cycles, and comments.
 
 ## Commands
 
 ```bash
-# Initialize the schema in a SQLite database
-sqlite3 database.db < linear_schema.sql
+cd sqlite-mcp-server
 
-# Verify schema was loaded correctly
-sqlite3 database.db ".schema"
+# Install dependencies
+npm install
 
-# List all tables
-sqlite3 database.db ".tables"
+# Initialize the SQLite database from schema
+npm run init-db
 
-# Explore the entity relationships visually in schema_diagram.md
-cat schema_diagram.md
+# Development (uses tsx for hot reload)
+npm run dev
+
+# Build TypeScript to dist/
+npm run build
+
+# Run production server
+npm start
 ```
 
 ## Architecture
 
-The schema follows a normalized relational design with these key patterns:
-
-| Pattern | Implementation |
-|---------|---------------|
-| **Central entity** | `issues` with denormalized `priority_value` for fast sorting |
-| **Label hierarchy** | Self-referencing `parent_id` on `labels` table |
-| **Issue relations** | Composite PK `(source_issue_id, target_issue_id, relation_type)` |
-| **Multi-team** | `team_id` on Projects, Issues, Labels, Cycles, Statuses |
-| **Data integrity** | Cascade deletes for issue-related data; triggers auto-maintain `updated_at` |
-
-### Key Entities
-
-- **USERS** → referenced by `projects.lead`, `issues.assignee/creator`, `initiatives.owner`
-- **TEAMS** → scope for projects, issues, labels, cycles, issue statuses
-- **PROJECTS** → contain issues, milestones, documents; belong to a team
-- **ISSUES** → core work items with status, priority, assignee, labels, relations, sub-issues
-- **CYCLES** → sprints/time-boxed work, team-scoped
-- **INITIATIVES** → high-level goals containing projects and documents
-
-## Available MCP Tools
-
-Two MCP servers are configured for this project:
-
-| Server | Tools | Purpose |
-|--------|-------|---------|
-| **Linear** (`mcp__plugin_linear_linear__*`) | Issues, Projects, Teams, Labels, Cycles, Initiatives, Documents, Comments, Attachments | Programmatic access to Linear's API |
-| **Exa** (`mcp__exa__*`) | Web search, code context retrieval | Research and documentation lookup |
-
-See `LINEAR_MCP.md` for full API documentation.
-
-## Common Queries
-
-```sql
--- Active issues with assignee and project info
-SELECT * FROM active_issues;
-
--- Issues with their labels (JSON array)
-SELECT id, title, identifier, labels FROM issues_with_labels;
-
--- Issues blocked by another
-SELECT * FROM issue_relations WHERE relation_type = 'blockedBy';
-
--- Find issues by priority (0=None, 1=Urgent, 2=High, 3=Normal, 4=Low)
-SELECT * FROM issues WHERE priority_value <= 2 ORDER BY priority_value ASC;
-
--- Issues in a specific cycle
-SELECT * FROM issues WHERE cycle_id = 'cycle-uuid';
 ```
+sqlite-mcp-server/src/
+├── index.ts           # Express + MCP server, session management, routes
+├── schema.ts          # Database initialization from linear_schema.sql
+├── db.ts              # SQLite connection (better-sqlite3)
+└── tools/
+    ├── base.ts        # Shared utilities (getTeamId, getIssueId, PRIORITY_MAP)
+    ├── issues.ts      # Issue CRUD tools
+    ├── projects.ts    # Project CRUD tools
+    ├── teams.ts       # Team CRUD tools
+    ├── labels.ts      # Label CRUD tools
+    ├── cycles.ts      # Cycle CRUD tools
+    ├── comments.ts    # Comment CRUD tools
+    └── users.ts       # User CRUD tools
+```
+
+### Tool Module Pattern
+
+Each tool module follows this pattern:
+1. `get[Entity]Tools()` - returns array of MCP tool definitions
+2. `register[Entity]Tools(registerHandler)` - registers handlers with the server
+
+See `issues.ts` for the complete pattern with SQL query building and foreign key resolution.
+
+### Database Schema
+
+The schema is defined in `linear_schema.sql` at the project root. Key tables:
+- `users` - referenced by `projects.lead`, `issues.assignee`, `initiatives.owner`
+- `teams` - scope for projects, issues, labels, cycles
+- `projects` - belong to a team, contain issues and milestones
+- `issues` - core work items with denormalized `priority_value` for sorting
+- `cycles` - sprints/time-boxed work, team-scoped
+- `labels` - self-referencing `parent_id` for hierarchy
+
+### MCP Server Transport
+
+Uses Streamable HTTP with JSON response mode (not SSE). Server endpoint: `http://localhost:3000/mcp`
+
+## MCP Tools Reference
+
+All tools accept entity IDs or names/keys. Helper functions in `base.ts` resolve names to IDs:
+- `getTeamId(team)` - finds by id, name, or key
+- `getUserId(user)` - finds by id, email, name, or 'me'
+- `getProjectId(project, teamId?)` - finds by id or name
+- `getIssueId(issue)` - finds by id or identifier (e.g., "ENG-123")
+- `getLabelId(label, teamId?)` - finds by id or name
+
+## Environment Variables
+
+- `PORT` - Server port (default: 3000)
+- `DB_PATH` - SQLite database file path (default: `sqlite-mcp-server/linear.db`)
