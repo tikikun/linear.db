@@ -1,0 +1,10 @@
+services:
+  linear-db:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./linear.db:/app/linear.db
+    environment:
+      - DB_PATH=/app/linear.db
+      - PORT=3000

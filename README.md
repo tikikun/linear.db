@@ -25,6 +25,8 @@ A Linear-style, agentic project management system powered by SQLite with MCP int
 
 ### Installation
 
+#### Option 1: Local Development
+
 ```bash
 # Clone and install
 git clone https://github.com/tikikun/linear.db.git
@@ -32,8 +34,26 @@ cd linear.db/sqlite-mcp-server
 npm install
 npm run init-db
 
-# Start the MCP server
+# Build the project
+npm run build
+
+# Start the MCP server (dev mode with hot reload)
 npm run dev
+
+# Or run production server
+npm start
+```
+
+#### Option 2: Docker
+
+```bash
+cd sqlite-mcp-server
+
+# Build and start the server
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
 ```
 
 The server runs at `http://localhost:3000/mcp` using Streamable HTTP transport.
@@ -41,7 +61,7 @@ The server runs at `http://localhost:3000/mcp` using Streamable HTTP transport.
 ### Connect to Claude Code
 
 ```bash
-claude mcp add linear-sqlite --url http://localhost:3000/mcp
+claude mcp add linear_db http://localhost:3000/mcp
 ```
 
 ### Connect to Cursor

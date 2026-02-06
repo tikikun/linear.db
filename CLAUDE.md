@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Linear-style ticketing system powered by SQLite with an MCP server for AI assistants. The server exposes 29 MCP tools for managing issues, projects, teams, labels, cycles, and comments.
 
-## Commands
+## Building the Project
 
 ```bash
 cd sqlite-mcp-server
@@ -25,6 +25,26 @@ npm run build
 
 # Run production server
 npm start
+```
+
+## Running the Server
+
+The server uses Streamable HTTP with JSON response mode. By default, it listens on `http://localhost:3000/mcp`.
+
+**Development mode (recommended for hacking):**
+```bash
+npm run dev
+```
+
+**Production mode:**
+```bash
+npm run build
+npm start
+```
+
+Once the server is running, add it to Claude Code:
+```bash
+claude mcp add linear_db http://localhost:3000/mcp
 ```
 
 ## Architecture
@@ -63,7 +83,22 @@ The schema is defined in `linear_schema.sql` at the project root. Key tables:
 - `cycles` - sprints/time-boxed work, team-scoped
 - `labels` - self-referencing `parent_id` for hierarchy
 
-### MCP Server Transport
+### Connecting to Claude Code
+
+Start the server first, then add it to Claude Code:
+
+```bash
+cd sqlite-mcp-server
+npm run dev
+```
+
+Then in your terminal, add the MCP server:
+
+```bash
+claude mcp add linear_db http://localhost:3000/mcp
+```
+
+## MCP Server Transport
 
 Uses Streamable HTTP with JSON response mode (not SSE). Server endpoint: `http://localhost:3000/mcp`
 

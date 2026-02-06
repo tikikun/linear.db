@@ -1,6 +1,5 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { Request, Response } from "express";
 import { randomUUID } from "crypto";
@@ -87,8 +86,10 @@ function createServer(): Server {
 // Session management - store transports by session ID
 const transports: Record<string, StreamableHTTPServerTransport> = {};
 
-// Create Express app with DNS rebinding protection
-const app = createMcpExpressApp();
+// Create Express app with custom DNS rebinding protection disabled for cloudflare tunnels
+import express from "express";
+const app = express();
+app.use(express.json());
 
 // Health check endpoint
 app.get("/health", (_req: Request, res: Response) => {
