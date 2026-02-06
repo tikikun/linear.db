@@ -36,7 +36,9 @@ When running a swarm of coding agents, transparency is critical. Linear.DB gives
 - **Learning MCP patterns** - Well-documented Streamable HTTP transport implementation
 
 
----------------
+-------------------------
+
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │  THE PROBLEM: Context Drift & Scattered Memory                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -130,3 +132,4 @@ When running a swarm of coding agents, transparency is critical. Linear.DB gives
   │              │          │ ✅ Knows the │
   │ ❌ Guesses   │          │   decision   │
   └──────────────┘          └──────────────┘
+```
